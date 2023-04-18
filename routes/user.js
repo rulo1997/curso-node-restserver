@@ -3,7 +3,9 @@ const { Router } = require('express');
 const { usuariosGet, usuariosPost, usuariosPut, usuariosDelete } = require('../controllers/user');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
+const { validarJWT } = require('../middlewares/validar-jwt');
 const { esRoleValido, emailExiste, existeUsuarioPorId } = require('../helpers/db-validators');
+const { esAdminRole, tieneRole } = require('../middlewares/validar-roles');
 
 
 const router = Router();
@@ -30,7 +32,10 @@ router.post( '/', [
     validarCampos
 ] ,usuariosPost ); //El segundo argumento es el midleware, cuando los argumentos son 3
 
-router.delete( '/:id', [
+router.delete( '/:id', [    
+    validarJWT,
+    // esAdminRole, 
+    tieneRole('ADMIN_ROLE','USER_ROLE','OTRO_ROLE'),
     check('id','No es un ID válido').isMongoId(),
     check('id').custom( existeUsuarioPorId ),
     validarCampos
